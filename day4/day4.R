@@ -2,22 +2,32 @@
 
 # library("tidyverse")
 
-# Load data ---------------------------------------------------------------
-
-test <- read_lines(here::here("day4", "test.txt"))
-
-format_draws <- function(element){
-  out <- as.numeric(strsplit(element, ",")[[1]])
+# Data functions ---------------------------------------------------------------
+#' Format raw data for draws
+#'
+#' @param string single element string separated by commas
+#'
+#' @return vector of numbers representing draws
+format_draws <- function(string){
+  out <- as.numeric(strsplit(string, ",")[[1]])
   return(out)
 }
-draws <- format_draws(test[[1]])
 
-
+#' Format raw board vectors into matrices
+#'
+#' @param vec numeric vector of board values
+#'
+#' @return numeric matrix representing the board
 board_mat <- function(vec){
-  dim <- length(vec)^0.5 # assume square
+  dim <- length(vec)^0.5 # assumes square
   matrix(vec, byrow = TRUE, ncol = dim, nrow = dim)
 }
 
+#' Format raw data for boards
+#'
+#' @param vec character vector of raw data for boards, separated by blanks
+#'
+#' @return numeric list of matrices representing boards
 format_boards <- function(vec){
   x <- vec != ""      # which are board elements
   n <- sum(vec == "") # number of boards
@@ -33,9 +43,12 @@ format_boards <- function(vec){
   return(out)
 }
 
-boards <- format_boards(test[-1])
 
 # Part 1 ------------------------------------------------------------------
+# Format input data
+test <- readLines(here::here("day4", "test.txt"))
+draws <- format_draws(test[[1]])
+boards <- format_boards(test[-1])
 
 
 
