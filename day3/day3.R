@@ -2,18 +2,7 @@
 # https://adventofcode.com/2021/day/3
 
 library("tidyverse")
-
-# Load data ---------------------------------------------------------------
-testdat <- readr::read_lines(here::here("day3", "test.txt"))
-inputdat <- readr::read_lines(here::here("day3", "input.txt"))
-
-# gamma rate = most common bit in position
-# epsilon rate = opposite, least common bit
-t1_gamma_binary <- c(1, 0, 1, 1, 0)
-t1_gamma_decimal <- 22
-t1_epsilon_binary <- c(0, 1, 0, 0, 1)
-t1_epsilon_decimal <- 9
-t1_result_final <- 198
+run_test <- TRUE
 
 
 # Part 1 ------------------------------------------------------------------
@@ -41,10 +30,6 @@ binmode <- function(vec, type = "power"){
     return(0)
   }
 }
-binmode(c(0,1,1,1,0)) == 1
-binmode(c(0,1), type = "life_support") == 1
--(binmode(c(0,1), type = "life_support") - 1) == 0
-# binmode(c(0,1), type = "x") 
 
 # Binary-decimal converter
 bindec <- function(vec){
@@ -57,8 +42,6 @@ bindec <- function(vec){
   
   return(dec)
 }
-bindec(t1_gamma_binary) == t1_gamma_decimal
-bindec(t1_epsilon_binary) == t1_epsilon_decimal
 
 # Cheater cheater tidyverse
 tidyway <- function(vec){
@@ -75,12 +58,9 @@ tidyway <- function(vec){
   
   res <- gamma_dec*epsilon_dec
   
-  return(list(gamma = gamma, 
-              epsilon = epsilon,
-              result = res))
+  return(res)
 }
-tidyway(testdat)$result == t1_result_final
-tidyway(inputdat)$result # 1540244
+
 
 
 # Part 2 ------------------------------------------------------------------
@@ -90,11 +70,6 @@ tidyway(inputdat)$result # 1540244
 # while loop for length
 
 # Oxygen generator
-
-# Can't use gamma here because it changes based on the subset,
-# so need to get the mode again each time
-
-
 get_oxygen <- function(vec){
   vecset <- vec
   l <- length(vecset)
@@ -110,8 +85,8 @@ get_oxygen <- function(vec){
   result <- as.numeric(strsplit(vecset, "")[[1]])
   return(result)
 }
-all(get_oxygen(testdat) == c(1,0,1,1,1))
 
+# Carbon dioxide scrubber
 get_carbondioxide <- function(vec){
   vecset <- vec
   l <- length(vecset)
@@ -126,11 +101,56 @@ get_carbondioxide <- function(vec){
   result <- as.numeric(strsplit(vecset, "")[[1]])
   return(result)
 }
-all(get_carbondioxide(testdat) == c(0,1,0,1,0))
 
-bindec(get_oxygen(testdat))*bindec(get_carbondioxide(testdat))
 
+
+# Test --------------------------------------------------------------------
+if(run_test == TRUE){
+  testdat <- readr::read_lines(here::here("day3", "test.txt"))
+  
+  # gamma rate = most common bit in position
+  # epsilon rate = opposite, least common bit
+  t1_gamma_binary <- c(1, 0, 1, 1, 0)
+  t1_gamma_decimal <- 22
+  t1_epsilon_binary <- c(0, 1, 0, 0, 1)
+  t1_epsilon_decimal <- 9
+  t1_result_final <- 198
+  
+  # Mode function
+  binmode(c(0,1,1,1,0)) == 1
+  binmode(c(0,1), type = "life_support") == 1
+  -(binmode(c(0,1), type = "life_support") - 1) == 0
+  # binmode(c(0,1), type = "x") 
+  
+  # Converter function
+  bindec(t1_gamma_binary) == t1_gamma_decimal
+  bindec(t1_epsilon_binary) == t1_epsilon_decimal
+  
+  # Power consumption function
+  tidyway(testdat) == t1_result_final
+  
+  # Oxygen generator
+  all(get_oxygen(testdat) == c(1,0,1,1,1))
+  
+  # Carbon dioxide scrubber
+  all(get_carbondioxide(testdat) == c(0,1,0,1,0))
+  
+  # Life support combined
+  bindec(get_oxygen(testdat))*bindec(get_carbondioxide(testdat)) == 230
+  
+}
+
+
+
+
+# Results -----------------------------------------------------------------
+inputdat <- readr::read_lines(here::here("day3", "input.txt"))
+
+# Part 1
+tidyway(inputdat) # 1540244
+
+# Part 2
 o2 <- bindec(get_oxygen(inputdat))
 co2 <- bindec(get_carbondioxide(inputdat))
-
 o2*co2 # 4203981
+
