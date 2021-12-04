@@ -35,7 +35,7 @@ format_boards <- function(vec){
   all <- vec[x] |>
     paste0(collapse = " ") |>
     strsplit("\\s+") |>
-    {\(x) x[[1]]}() # base equivalent of %>% `[[(1)` see shorturl.at/cktO7
+    {\(x) x[[1]]}() # base equivalent of %>% `[[`(1) see shorturl.at/cktO7
 
   out <- split(all, cut(seq_along(all), n, labels = FALSE)) |>
     lapply(board_mat)
@@ -140,14 +140,3 @@ do_part_two <- function(){
   get_loser(gameresults)
 }
 do_part_two() # 4590
-
-
-# Scratch -----------------------------------------------------------------
-
-pp <- gsub("^$", "break", jj)
-sum(pp == "break") # number of boards
-sum(pp != "break")/sum(pp == "break") # number rows per board (we know it's 5)
-split(pp, f = pp == "break")
-
-separate(tibble(pp), pp, "break", into = "a")
-
