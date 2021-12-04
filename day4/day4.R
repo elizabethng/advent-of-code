@@ -1,7 +1,5 @@
 # --- Day 4: Giant Squid ---
 
-# library("tidyverse")
-
 # Data functions ---------------------------------------------------------------
 #' Format raw data for draws
 #'
@@ -20,7 +18,9 @@ format_draws <- function(string){
 #' @return numeric matrix representing the board
 board_mat <- function(vec){
   dim <- length(vec)^0.5 # assumes square
-  matrix(vec, byrow = TRUE, ncol = dim, nrow = dim)
+  out <- as.numeric(vec) |>
+    matrix(byrow = TRUE, ncol = dim, nrow = dim)
+  return(out)
 }
 
 #' Format raw data for boards
@@ -45,12 +45,66 @@ format_boards <- function(vec){
 
 
 # Part 1 ------------------------------------------------------------------
-# Format input data
-test <- readLines(here::here("day4", "test.txt"))
-draws <- format_draws(test[[1]])
-boards <- format_boards(test[-1])
+# Which board wins in the smallest number of steps?
+
+#' Play bingo on one board
+#'
+#' @param board numeric matrix
+#' @param draws numeric vector
+#'
+#' @return list with number of draws and product of last number and unmarked
+playbingo <- function(board, draws){
+  n <- nrow(board)
+  i <- n - 1 # can't win until 5 draws
+  win <- FALSE
+
+  while(win == FALSE){
+    i <- i + 1
+    marked <- matrix(board %in% draws[1:i], byrow = FALSE, nrow = n)
+    win <- any(c(colSums(marked) == n,rowSums(marked) == n))
+  }
+  
+  return(list(
+    n_draws = i,
+    product = draws[i]*sum(board[!marked])
+  ))
+}
 
 
+#' Which has least number of draws?
+#'
+#' @param l list of output from playbingo()
+#'
+#' @return numeric element corresponding to product output from lowest number of draws
+get_answer <- function(l){
+  sapply(l, `[[`, "n_draws") |>
+    {\(x) which(x == min(x))}() |>
+    {\(x) l[[x]]$product}()
+}
+
+
+test_part_one <- function(){
+  test <- readLines(here::here("day4", "test.txt"))
+  
+  draws <- format_draws(test[[1]])
+  boards <- format_boards(test[-1])
+  # playbingo(boards[[3]], draws)
+  
+  gameresults <- lapply(boards, playbingo, draws = draws)
+  get_answer(gameresults)
+}
+test_part_one() == 4512
+
+do_part_one <- function(){
+  input <- readLines(here::here("day4", "input.txt"))
+  
+  draws <- format_draws(input[[1]])
+  boards <- format_boards(input[-1])
+
+  gameresults <- lapply(boards, playbingo, draws = draws)
+  get_answer(gameresults)
+}
+do_part_one() # 8442
 
 # Scratch -----------------------------------------------------------------
 
