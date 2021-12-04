@@ -76,7 +76,7 @@ playbingo <- function(board, draws){
 #' @param l list of output from playbingo()
 #'
 #' @return numeric element corresponding to product output from lowest number of draws
-get_answer <- function(l){
+get_winner <- function(l){
   sapply(l, `[[`, "n_draws") |>
     {\(x) which(x == min(x))}() |>
     {\(x) l[[x]]$product}()
@@ -91,7 +91,7 @@ test_part_one <- function(){
   # playbingo(boards[[3]], draws)
   
   gameresults <- lapply(boards, playbingo, draws = draws)
-  get_answer(gameresults)
+  get_winner(gameresults)
 }
 test_part_one() == 4512
 
@@ -102,9 +102,45 @@ do_part_one <- function(){
   boards <- format_boards(input[-1])
 
   gameresults <- lapply(boards, playbingo, draws = draws)
-  get_answer(gameresults)
+  get_winner(gameresults)
 }
 do_part_one() # 8442
+
+
+# Part 2 ------------------------------------------------------------------
+#' Which has most number of draws?
+#'
+#' @param l list of output from playbingo()
+#'
+#' @return numeric element corresponding to product output from highest number of draws
+get_loser <- function(l){
+  sapply(l, `[[`, "n_draws") |>
+    {\(x) which(x == max(x))}() |>
+    {\(x) l[[x]]$product}()
+}
+
+test_part_two <- function(){
+  test <- readLines(here::here("day4", "test.txt"))
+  
+  draws <- format_draws(test[[1]])
+  boards <- format_boards(test[-1])
+  
+  gameresults <- lapply(boards, playbingo, draws = draws)
+  get_loser(gameresults)
+}
+test_part_two() == 1924
+
+do_part_two <- function(){
+  input <- readLines(here::here("day4", "input.txt"))
+  
+  draws <- format_draws(input[[1]])
+  boards <- format_boards(input[-1])
+  
+  gameresults <- lapply(boards, playbingo, draws = draws)
+  get_loser(gameresults)
+}
+do_part_two() # 4590
+
 
 # Scratch -----------------------------------------------------------------
 
