@@ -21,8 +21,6 @@ binmode <- function(vec, type = "power"){
       stop("Equal number of 1 and 0")
     } else if(type == "life_support") {
       return(1)
-    } else if (type == "CO2") {
-      return(0)
     }
   } else if(s > l) {
     return(1)
