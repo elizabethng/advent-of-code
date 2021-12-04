@@ -73,10 +73,10 @@ get_oxygen <- function(vec){
   l <- length(vecset)
   i <- 1
   while(l > 1){
-    jj <- substring(vecset, i, i)
-    mode <- binmode(as.numeric(jj), type = "life_support")
+    bit <- substring(vecset, i, i)
+    mode <- binmode(as.numeric(bit), type = "life_support")
 
-    vecset <- vecset[jj == mode]
+    vecset <- vecset[bit == mode]
     l <- length(vecset)
     i <- i + 1
   }
@@ -90,9 +90,9 @@ get_carbondioxide <- function(vec){
   l <- length(vecset)
   i <- 1
   while(l > 1){
-    jj <- substring(vecset, i, i)
-    mode <- -(binmode(as.numeric(jj), type = "life_support") - 1)
-    vecset <- vecset[jj == mode]
+    bit <- substring(vecset, i, i)
+    mode <- -(binmode(as.numeric(bit), type = "life_support") - 1)
+    vecset <- vecset[bit == mode]
     l <- length(vecset)
     i <- i + 1
   }
@@ -115,26 +115,26 @@ if(run_test == TRUE){
   t1_result_final <- 198
   
   # Mode function
-  binmode(c(0,1,1,1,0)) == 1
-  binmode(c(0,1), type = "life_support") == 1
-  -(binmode(c(0,1), type = "life_support") - 1) == 0
+  print(binmode(c(0,1,1,1,0)) == 1)
+  print(binmode(c(0,1), type = "life_support") == 1)
+  print(-(binmode(c(0,1), type = "life_support") - 1) == 0)
   # binmode(c(0,1), type = "x") 
   
   # Converter function
-  bindec(t1_gamma_binary) == t1_gamma_decimal
-  bindec(t1_epsilon_binary) == t1_epsilon_decimal
+  print(bindec(t1_gamma_binary) == t1_gamma_decimal)
+  print(bindec(t1_epsilon_binary) == t1_epsilon_decimal)
   
   # Power consumption function
-  tidyway(testdat) == t1_result_final
+  print(tidyway(testdat) == t1_result_final)
   
   # Oxygen generator
-  all(get_oxygen(testdat) == c(1,0,1,1,1))
+  print(all(get_oxygen(testdat) == c(1,0,1,1,1)))
   
   # Carbon dioxide scrubber
-  all(get_carbondioxide(testdat) == c(0,1,0,1,0))
+  print(all(get_carbondioxide(testdat) == c(0,1,0,1,0)))
   
   # Life support combined
-  bindec(get_oxygen(testdat))*bindec(get_carbondioxide(testdat)) == 230
+  print(bindec(get_oxygen(testdat))*bindec(get_carbondioxide(testdat)) == 230)
   
 }
 
