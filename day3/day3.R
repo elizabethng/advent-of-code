@@ -20,8 +20,8 @@ t1_result_final <- 198
 # Mode if more than half observations
 # All are 1 or zero
 binmode <- function(vec, type = "power"){
-  if(!(type %in% c("power", "O2", "CO2"))){
-    stop("Type must be one of power, O2, or CO2")
+  if(!(type %in% c("power", "life_support"))){
+    stop("Type must be one of 'power' or 'life_support'")
   }
   
   l <- length(vec)/2
@@ -30,7 +30,7 @@ binmode <- function(vec, type = "power"){
   if(s == l){
     if(type == "power") {
       stop("Equal number of 1 and 0")
-    } else if(type == "O2") {
+    } else if(type == "life_support") {
       return(1)
     } else if (type == "CO2") {
       return(0)
@@ -42,8 +42,8 @@ binmode <- function(vec, type = "power"){
   }
 }
 binmode(c(0,1,1,1,0)) == 1
-binmode(c(0,1), type = "O2") == 1
-binmode(c(0,1), type = "CO2") == 0
+binmode(c(0,1), type = "life_support") == 1
+-(binmode(c(0,1), type = "life_support") - 1) == 0
 # binmode(c(0,1), type = "x") 
 
 # Binary-decimal converter
@@ -101,15 +101,16 @@ get_oxygen <- function(vec){
   i <- 1
   while(l > 1){
     jj <- substring(vecset, i, i)
-    mode <- binmode(as.numeric(jj), type = "O2")
+    mode <- binmode(as.numeric(jj), type = "life_support")
 
     vecset <- vecset[jj == mode]
     l <- length(vecset)
     i <- i + 1
   }
-  return(vecset)
+  result <- as.numeric(strsplit(vecset, "")[[1]])
+  return(result)
 }
-get_oxygen(testdat) == 10111
+all(get_oxygen(testdat) == c(1,0,1,1,1))
 
 get_carbondioxide <- function(vec){
   vecset <- vec
@@ -117,18 +118,19 @@ get_carbondioxide <- function(vec){
   i <- 1
   while(l > 1){
     jj <- substring(vecset, i, i)
-    mode <- binmode(as.numeric(jj), type = "O2")
-    
+    mode <- -(binmode(as.numeric(jj), type = "life_support") - 1)
     vecset <- vecset[jj == mode]
     l <- length(vecset)
     i <- i + 1
   }
-  return(vecset)
+  result <- as.numeric(strsplit(vecset, "")[[1]])
+  return(result)
 }
+all(get_carbondioxide(testdat) == c(0,1,0,1,0))
 
-# Other stuff -------------------------------------------------------------
-# Rearrange data column-wise?
-as.matrix(paste0(testdat, collapse = ""), 
-            byrow = TRUE, 
-            nrow = length(testdat),
-            ncol = nchar(testdat[1]))
+bindec(get_oxygen(testdat))*bindec(get_carbondioxide(testdat))
+
+o2 <- bindec(get_oxygen(inputdat))
+co2 <- bindec(get_carbondioxide(inputdat))
+
+o2*co2 # 4203981
