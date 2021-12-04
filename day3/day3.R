@@ -19,18 +19,32 @@ t1_result_final <- 198
 # Part 1 ------------------------------------------------------------------
 # Mode if more than half observations
 # All are 1 or zero
-binmode <- function(vec){
+binmode <- function(vec, type = "power"){
+  if(!(type %in% c("power", "O2", "CO2"))){
+    stop("Type must be one of power, O2, or CO2")
+  }
+  
   l <- length(vec)/2
   s <- sum(vec)
   
   if(s == l){
-    stop("Equal number of 1 and 0")
-  } else if(s > l){
+    if(type == "power") {
+      stop("Equal number of 1 and 0")
+    } else if(type == "O2") {
+      return(1)
+    } else if (type == "CO2") {
+      return(0)
+    }
+  } else if(s > l) {
     return(1)
   } else {
     return(0)
   }
 }
+binmode(c(0,1,1,1,0)) == 1
+binmode(c(0,1), type = "O2") == 1
+binmode(c(0,1), type = "CO2") == 0
+# binmode(c(0,1), type = "x") 
 
 # Binary-decimal converter
 bindec <- function(vec){
@@ -61,12 +75,56 @@ tidyway <- function(vec){
   
   res <- gamma_dec*epsilon_dec
   
-  return(res)
+  return(list(gamma = gamma, 
+              epsilon = epsilon,
+              result = res))
 }
-tidyway(testdat) == t1_result_final
-tidyway(inputdat)
+tidyway(testdat)$result == t1_result_final
+tidyway(inputdat)$result # 1540244
 
 
+# Part 2 ------------------------------------------------------------------
+# Life support rating
+# oxygen generator rating : corresponds to gamma
+# times CO2 scrubber rating : corresponds to epsilon
+# while loop for length
+
+# Oxygen generator
+
+# Can't use gamma here because it changes based on the subset,
+# so need to get the mode again each time
+
+
+get_oxygen <- function(vec){
+  vecset <- vec
+  l <- length(vecset)
+  i <- 1
+  while(l > 1){
+    jj <- substring(vecset, i, i)
+    mode <- binmode(as.numeric(jj), type = "O2")
+
+    vecset <- vecset[jj == mode]
+    l <- length(vecset)
+    i <- i + 1
+  }
+  return(vecset)
+}
+get_oxygen(testdat) == 10111
+
+get_carbondioxide <- function(vec){
+  vecset <- vec
+  l <- length(vecset)
+  i <- 1
+  while(l > 1){
+    jj <- substring(vecset, i, i)
+    mode <- binmode(as.numeric(jj), type = "O2")
+    
+    vecset <- vecset[jj == mode]
+    l <- length(vecset)
+    i <- i + 1
+  }
+  return(vecset)
+}
 
 # Other stuff -------------------------------------------------------------
 # Rearrange data column-wise?
