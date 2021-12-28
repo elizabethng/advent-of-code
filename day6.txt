@@ -1,12 +1,6 @@
 
 Advent of Code
 
-    [About][Events][Shop][Settings][Log Out]
-
-(anonymous user #1735826) 8*
- {'year':2021}
-
-    [Calendar][AoC++][Sponsors][Leaderboard][Stats]
 
 Our sponsors help make Advent of Code possible:
 Ahrefs - Leverage modern hardware and advanced programming to process real big data. Work on the next general purpose search engine. From anywhere in the world. OCaml, Reasonml, C++
@@ -69,3 +63,12 @@ To begin, get your puzzle input.
 Answer:
 
 You can also [Shareon Twitter Mastodon] this puzzle.
+
+--- Part Two ---
+
+Suppose the lanternfish live forever and have unlimited food and space. Would they take over the entire ocean?
+
+After 256 days in the example above, there would be a total of 26984457539 lanternfish!
+
+How many lanternfish would there be after 256 days?
+

@@ -79,4 +79,19 @@ if(FALSE){
 # Part 1 answer -----------------------------------------------------------
 dat <- scan("day6_dat.txt", sep = ",")
 n0 <- freq_fun(dat)
-grow(n0, A, 80) %>% sum() # 352,195 fish
+grow(n0, A, 80) %>% sum() # 352195 fish
+
+
+
+
+# Part 2 ------------------------------------------------------------------
+# Test data
+if(FALSE){
+  c(3,4,3,1,2) %>%
+    freq_fun() %>%
+    grow(., A, 256) %>% 
+    sum() # 26984457539
+}
+options(scipen = 999) # turn off scientific notation
+grow(n0, A, 256) %>%
+  sum() # 1600306001288
