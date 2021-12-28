@@ -6,13 +6,6 @@
 library("tidyverse")
 library("sf")
 
-ls <- st_linestring(rbind(c(0,0),c(1,1),c(2,1)))
-mls <- st_multilinestring(list(rbind(c(2,2),c(1,3)), rbind(c(0,0),c(1,1),c(2,1))))
-(sfc <- st_sfc(ls,mls))
-st_cast(sfc, "MULTILINESTRING")
-st_cast(ls, "LINESTRING")
-sf <- st_sf(a = 5:4, geom = sfc)
-st_cast(sf, "MULTILINESTRING")
 
 #  Load data --------------------------------------------------------------
 
@@ -53,7 +46,48 @@ pp <- testdat %>%
   summarize(slope = unique(slope)) %>% 
   st_cast("LINESTRING")
 
-plot(pp)
+plot(st_geometry(pp))
+
+res <- st_intersects(pp, sparse = FALSE)
+res[upper.tri(res)] <- 0
+diag(res) <- 0
+sum(res)
+
+res2 <- st_intersection(pp)
+plot(select(res2, step)) # looks like 9
+
+group_by(res2, step) %>%
+  summarize(sum(n.overlaps))
+
+filter(res2, n.overlaps >= 2) # 14, which matches sum above
+# Clearly things are getting double-counted
+
+# Can I extract points and then look at unique ones?
+# Don't know how to search geometry, but points have two
+# length in origins (except line 10 for some reason)
+# looked at dput of geometry, looks like I can go by
+# class perhaps
+
+jj <- res2 %>%
+  mutate(
+    ck = map(geometry, class),
+    ck = map_chr(ck, 2)
+  ) %>%
+  filter(ck == "POINT") %>%
+  select(geometry) %>%
+  distinct()
+  
+nrow(jj) # number of unique intersection points!
+
+# Scratch -----------------------------------------------------------------
+ls <- st_linestring(rbind(c(0,0),c(1,1),c(2,1)))
+mls <- st_multilinestring(list(rbind(c(2,2),c(1,3)), rbind(c(0,0),c(1,1),c(2,1))))
+(sfc <- st_sfc(ls,mls))
+st_cast(sfc, "MULTILINESTRING")
+st_cast(ls, "LINESTRING")
+sf <- st_sf(a = 5:4, geom = sfc)
+st_cast(sf, "MULTILINESTRING")
+
 
 pp <- testdat %>%
   rowwise() %>%
@@ -83,5 +117,6 @@ s = st_sf(a = select(pp, -move), geometry = ck)
 # Part 1 ------------------------------------------------------------------
 
 # At how many points do at least two lines overlap?
+# i.e., how many intersections
 
 chart_path <- function()
