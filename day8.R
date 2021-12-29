@@ -1,4 +1,4 @@
-# Day 8
+# Day 8 Part 1
 
 library("tidyverse")
 
@@ -27,6 +27,7 @@ key <- tibble(
 
 dup_segments <- key$segments[duplicated(key$segments)]
 unique_key <- filter(key, !(segments %in% dup_segments))
+
 
 procdat <- function(raw){
   dat <- tibble(raw) %>%
@@ -67,3 +68,4 @@ if(FALSE){
 read_lines("day8_dat.txt") %>%
   procdat() %>%
   get1478() # 362
+

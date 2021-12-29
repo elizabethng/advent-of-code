@@ -1,7 +1,9 @@
-# Brute force approach
+# Day 8 Part 2 -- Brute force approach
 
 library("tidyverse")
 
+
+# 00. Preliminaries -------------------------------------------------------
 # slots
 #  1111
 # 2    3
@@ -29,9 +31,6 @@ key <- matrix(c(
   nrow = 10, ncol = 7) %>%
   `==`(1)
 
-# Get all possible configurations
-perms <- gtools::permutations(7, 7, letters[1:7])
-
 # Use key and a permutation list to get codes for each number
 # pvec is one permutation vector (character)
 # key is the T/F matrix representation of each number
@@ -50,13 +49,6 @@ get_codes <- function(pvec, key){
   
   return(out)
 }
-# Example
-if(FALSE){
-  get_codes(perms[1,], key)
-  
-  # do for a bunch of perms
-  permsub <- perms[1:15,] 
-}
 
 # Alphabetize components of a string element
 alphabetize <- function(e){
@@ -67,61 +59,13 @@ alphabetize <- function(e){
   
   return(out)
 }
+# Vectorized version of alphabetize
 alphabetize_vec <- function(vec){
   out <- vec %>%
     matrix(ncol = 1) %>%
     apply(1, alphabetize)
   
   return(out)
-}
-
-# don't know why dimensions have changed after apply...
-allcodes <- t(apply(perms, 1, get_codes, key = key))
-allcodes_abc <- apply(allcodes, c(1,2), alphabetize)
-
-# Now I have a list of all possible combinations and 
-# their corresponding number (column). 
-# Need to look up in each list
-
-if(FALSE){
-  # Example 1 from first row of data
-  ex1 <- matrix(c("acedgfb", "cdfbe", "gcdfa", "fbcad", "dab", 
-                  "cefabd", "cdfgeb", "eafb", "cagedb", "ab"),
-                ncol = 1)
-  
-  # Put in alphabetical order
-  ex1_abc <- apply(ex1, 1, alphabetize)
-  
-  # Now need to search through allcodes and find matches
-  # Need one where they all match
-  ex1_abc %in% allcodes[1,] # do for first row
-  ex1_abc %in% allcodes[2,] # do for second row
-  # deafgbc is true, should match row 2537
-  ex1_abc %in% allcodes[2537,]
-  ex1_abc %in% allcodes_abc[2537,] # now works!
-  
-  perms %>%
-    data.frame() %>%
-    tibble() %>%
-    rowid_to_column() %>%
-    filter(X1 == "d", X2 == "e", X3 == "a",
-           X4 == "f", X5 == "g", X6 == "b", X7 == "c")
-  
-  
-  # NOTE: better test might be for example shown, i.e., for 
-  #       first test case where they are all in order
-  myex <- matrix(c("abcefg", "cf", "acdeg", "acdfg", "bcdf",
-                   "abdfg", "abdefg", "abcdefg", "abcdfg"),
-                 ncol = 1)
-  myex_abc <- apply(myex, 1, alphabetize)
-  # should match #1
-  all(myex %in% allcodes[1,]) # do for first row
-  
-  # What if missing some of the values?
-  myex2 <- myex[1:5]
-  # should match #1
-  all(myex2 %in% allcodes[1,]) # works!
-  
 }
 
 # Find whether a list of codes is a match for a message
@@ -132,25 +76,10 @@ find_match <- function(codes, message){
   all(message %in% codes)
 }
 
-find_match(codes = allcodes[1,], message = ex1_abc)
-find_match(codes = allcodes[1,], message = myex)
-
-# Do for all codes with a single message
-ck <- apply(allcodes_abc, 1, find_match, message = ex1_abc)
-
-# Now that I've identified the correct sequence, need to 
-# use the numbers to decode!!
-
-# apply back to key to get numbers
-# wrap in function decode()
-jj <- bind_cols(number = 0:9, code = allcodes_abc[ck, ]) 
-
-tibble(code = ex1_abc) %>%
-  left_join(jj, by = "code")
-# Split LHS (numbers) and RHS (nums to sum)
-# probably just want to use alphabetized everything
-
-# Do for one
+# Function to decode a message, given all permutations
+# dat is a list of two elements, first is vector of encoded values
+# and second is vector of elements to decode
+# Returns a number encoded in the message
 decode <- function(dat, allcodes_abc){
   # 1. alphabetize
   dat_abc <- alphabetize_vec(dat[[1]])
@@ -170,5 +99,40 @@ decode <- function(dat, allcodes_abc){
     as.numeric()
   
   return(out)
+}
+
+
+# 01.  Read in data -------------------------------------------------------
+raw <- read_lines("day8_dat.txt")
+
+# Split into key and code
+dat <- str_split(raw, " \\| ") %>%
+  lapply(str_split, pattern = " ")
+
+# 02.  Get results --------------------------------------------------------
+# Get all possible configurations
+perms <- gtools::permutations(7, 7, letters[1:7])
+allcodes <- t(apply(perms, 1, get_codes, key = key)) # dim swap
+allcodes_abc <- apply(allcodes, c(1,2), alphabetize)
+
+# Do for all
+allres <- lapply(dat, decode, allcodes_abc = allcodes_abc)
+
+# Sum to retrieve answer
+sapply(allres, `*`, 1) %>% sum() # 1020159
+
+
+
+# Test data ---------------------------------------------------------------
+if(FALSE){
+  raw <- read_lines("day8_test.txt")
+  dat <- str_split(raw, " \\| ") %>%
+    lapply(str_split, pattern = " ")
+  
+  # Do for all
+  allres <- lapply(dat, decode, allcodes_abc = allcodes_abc)
+  
+  # Sum to retrieve answer
+  sapply(allres, `*`, 1) %>% sum() # 61229 
 }
 
