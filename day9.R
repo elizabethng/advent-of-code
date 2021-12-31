@@ -19,16 +19,8 @@ proc_data <- function(raw){
 }
 
 # Helper functions to handle out of bounds errors
-top <- function(A, i, j){ A[i - 1, j] }
-bot <- function(A, i, j){ A[i + 1, j] }
-lhs <- function(A, i, j){ A[i, j - 1] }
-rhs <- function(A, i, j){ A[i, j + 1] }
-
-top_s <- possibly(top, NULL)
-bot_s <- possibly(bot, NULL)
-lhs_s <- possibly(lhs, NULL)
-rhs_s <- possibly(rhs, NULL)
-
+index <- function(A, i, j){ A[i, j] }
+index_s <- possibly(index, NULL)
 
 # Returns a logical matrix of same size as A
 # where TRUE if the element is a local minima
@@ -41,10 +33,10 @@ get_minima <- function(A){
     for(j in 1:c){
       val <- A[i,j]
       
-      tp <- top_s(A = A, i = i, j = j)
-      bt <- bot_s(A = A, i = i, j = j)
-      lh <- lhs_s(A = A, i = i, j = j)
-      rh <- rhs_s(A = A, i = i, j = j)
+      tp <- index_s(A = A, i = (i - 1), j = j)
+      bt <- index_s(A = A, i = (i + 1), j = j)
+      lh <- index_s(A = A, i = i, j = (j - 1))
+      rh <- index_s(A = A, i = i, j = (j + 1))
       
       out <- all(c(tp, bt, lh, rh) > val)
       O[i,j] <- out
@@ -68,3 +60,11 @@ dat <- read_lines("day9_input.txt")
 A <- proc_data(dat)  
 res <- get_minima(A)
 sum(A[res] + 1) # 486
+
+
+# Part 2 ------------------------------------------------------------------
+A <- read_lines("day9_test.txt") %>% proc_data() 
+res <- get_minima(A)
+(A == 9) %>%
+  apply(c(1,2), as.numeric)
+apply(res, c(1,2), as.numeric)
