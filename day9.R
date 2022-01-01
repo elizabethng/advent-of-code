@@ -3,7 +3,6 @@
 library("tidyverse")
 
 
-
 # Preliminaries ------------------------------------------------------
 proc_data <- function(raw){
   tmp <- strsplit(raw, "") 
@@ -64,7 +63,68 @@ sum(A[res] + 1) # 486
 
 # Part 2 ------------------------------------------------------------------
 A <- read_lines("day9_test.txt") %>% proc_data() 
-res <- get_minima(A)
+minima <- get_minima(A)
+
 (A == 9) %>%
   apply(c(1,2), as.numeric)
-apply(res, c(1,2), as.numeric)
+# apply(res, c(1,2), as.numeric)
+
+# Get the locations of the minima and start searching
+# around each one. Search ends when 9s are encountered (or NULL)
+
+# Do for 1
+M <- which(minima == TRUE, arr.ind = TRUE)
+ij <- M[1,]
+
+
+# Turn TRUE to 0 to initialize output array
+zero_fun <- function(e){
+  ifelse(e, NA, e)
+}
+
+R <- (A != 9) %>%
+  # apply(c(1,2), as.numeric) %>%
+  apply(c(1,2), zero_fun)
+
+
+# Start at the min
+i = ij[1]
+j = ij[2]
+
+# Local minima is included
+R[i, j] <- TRUE
+
+# Look around
+tp <- index_s(A = R, i = (i - 1), j = j)
+bt <- index_s(A = R, i = (i + 1), j = j)
+lh <- index_s(A = R, i = i, j = (j - 1))
+rh <- index_s(A = R, i = i, j = (j + 1))
+
+# If it's FALSE, stop, that's a 9
+# If it's NA, make it TRUE and then pick up there
+# It length == 0, skip because those are edges
+
+# Could write this as a checking function
+# Iterate through each direction for now?
+# function(vl, i, j, M)
+
+update_map <- function(R, val, i, j){
+  if(length(val) == 0){
+    print("encountered edge") 
+  } else if(is.na(val)) {
+    R[i, j] <- TRUE
+  } else if(val == FALSE){
+    print("encountered 9")
+  } else {
+    "error"
+  }
+  return(R)
+}
+
+update_map(R, tp, i = (i - 1), j = j) %>%
+update_map(bt, i = (i + 1), j = j) %>%
+update_map(lh, i = i, j = (j - 1)) %>%
+update_map(rh, i = i, j = (j + 1))
+
+# But then need indices of any that were good
+# so search can continue there
