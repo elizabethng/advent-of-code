@@ -84,10 +84,10 @@ update_map <- function(coords, resmat, pointlist){
   
   # Maybe use for loop or apply here instead
   val_vec <- c(
-    "top" = index_s(A = R, i = P[1,1], j = P[1,2]),
-    "rhs" = index_s(A = R, i = P[2,1], j = P[2,2]),
-    "bot" = index_s(A = R, i = P[3,1], j = P[3,2]),
-    "lhs" = index_s(A = R, i = P[4,1], j = P[4,2])
+    "top" = index_s(A = resmat, i = P[1,1], j = P[1,2]),
+    "rhs" = index_s(A = resmat, i = P[2,1], j = P[2,2]),
+    "bot" = index_s(A = resmat, i = P[3,1], j = P[3,2]),
+    "lhs" = index_s(A = resmat, i = P[4,1], j = P[4,2])
   )
   
   # 3. Add 0 coordinates to list of coords
@@ -121,23 +121,36 @@ minima <- get_minima(A)
 M <- which(minima == TRUE, arr.ind = TRUE) # minima locations
 R <- apply((A == 9), c(1, 2), as.numeric) # ridges := 1
 
-# Initialize storage for points to evaluate
-new_points <- list()
+# Now wrap in function and apply to each row of M to get a list
+# of results for each basin
+# ACTUALLY only need the size of each basin so add that as final
+# step
 
-first <- update_map(coords = M[2,], resmat = R, pointlist = new_points)
-
-counter <- 1
-R <- first[[1]]
-new_points <- first[[2]]
-
-while(counter <= nrow(new_points)){
-  tmp <- update_map(
-    coords = new_points[counter, ], 
-    resmat = R, 
-    pointlist = new_points)
+get_basin <- function(coords, resmat){
+  # Initialize storage for points to evaluate
+  new_points <- list()
   
-  R <- tmp[[1]]
-  new_points <- tmp[[2]]
-  counter <- counter + 1
+  first <- update_map(coords = coords, resmat = R, pointlist = new_points)
+  
+  counter <- 1
+  R <- first[[1]]
+  new_points <- first[[2]]
+  
+  while(counter <= nrow(new_points)){
+    tmp <- update_map(
+      coords = new_points[counter, ], 
+      resmat = R, 
+      pointlist = new_points)
+    
+    R <- tmp[[1]]
+    new_points <- tmp[[2]]
+    counter <- counter + 1
+  }
+  
+  result <- sum(R == 2)
+  
+  return(result)
 }
+
+apply(M, 1, get_basin, resmat = R)
 
