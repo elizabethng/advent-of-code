@@ -52,58 +52,9 @@ get_minima <- function(A){
 }
 
 # Turn TRUE to 0 to initialize output array
-zero_fun <- function(e){
-  ifelse(e, NA, e)
-}
-
-# Check if a cell value is an edge, part of a basin,
-# or part of a ridge (i.e., a 9) and return an updated
-# matrix (filling TRUE for basin cell) and the coordinates
-# of a cell if it is determined to be part of a basin
-# update_map <- function(R, val, i, j){
-#   coords <- NA
-#   if(is.na(val)){
-#     print("encountered edge") 
-#   } else if(val == 0) {
-#     R[i, j] <- 2   # update array
-#     coords <- c("row" = unname(i), "col" = unname(j))  # return coordinates
-#   } else if(val == 1){
-#     print("encountered ridge")
-#   } else {
-#     "error"
-#   }
-#   return(list(R = R, coords = coords))
+# zero_fun <- function(e){
+#   ifelse(e, NA, e)
 # }
-
-
-# Outline -----------------------------------------------------------------
-# 0. Initialize the output array & get minima
-# 1. Get the first minima & set to 2
-# 2. Check values at all four points
-# 3. Make a list of the coordinates that are 0 (basin)
-# 4. Update the matrix to mark basin cells with 2
-# 5. Take the first value in the list of coordinates
-#    and use that as the value in step 1, repeat
-# 6. When the list of coordinates is empty, get the
-#    indices that are TRUE, this is output for first
-#    minima. 
-# 7. Make all the TRUE values FALSE
-# 8. Select the next minima value and go to step 2
-
-
-# 0. Initialize output array & get minima ---------------------------------
-A <- read_lines("day9_test.txt") %>% proc_data() 
-minima <- get_minima(A)
-M <- which(minima == TRUE, arr.ind = TRUE) # minima locations
-# R <- apply((A != 9), c(1,2), zero_fun)     # output array
-R <- apply((A == 9), c(1, 2), as.numeric) # ridges := 1
-
-# Initialize vector for storing points to evaluate
-# Cleaner alternative (potentially) store in list
-new_points <- list()
-# matrix(NA, ncol = 2, dimnames = list(c(1),c("row", "col")))
-
-
 
 #' Function to update results matrix
 #'
@@ -141,12 +92,37 @@ update_map <- function(coords, resmat, pointlist){
   
   # 3. Add 0 coordinates to list of coords
   pointlist <- rbind(pointlist, 
-                      P[(val_vec) == 0 & (!is.na(val_vec)), ])
+                     P[(val_vec) == 0 & (!is.na(val_vec)), ])
   
   return(
     list(resmat, pointlist)
   )
 }
+
+
+# Outline -----------------------------------------------------------------
+# 0. Initialize the output array & get minima
+# 1. Get the first minima & set to 2
+# 2. Check values at all four points
+# 3. Make a list of the coordinates that are 0 (basin)
+# 4. Update the matrix to mark basin cells with 2
+# 5. Take the first value in the list of coordinates
+#    and use that as the value in step 1, repeat
+# 6. When the list of coordinates is empty, get the
+#    indices that are TRUE, this is output for first
+#    minima. 
+# 7. Make all the TRUE values FALSE
+# 8. Select the next minima value and go to step 2
+
+
+# 0. Initialize output array & get minima ---------------------------------
+A <- read_lines("day9_test.txt") %>% proc_data() 
+minima <- get_minima(A)
+M <- which(minima == TRUE, arr.ind = TRUE) # minima locations
+R <- apply((A == 9), c(1, 2), as.numeric) # ridges := 1
+
+# Initialize storage for points to evaluate
+new_points <- list()
 
 first <- update_map(coords = M[2,], resmat = R, pointlist = new_points)
 
@@ -165,48 +141,3 @@ while(counter <= nrow(new_points)){
   counter <- counter + 1
 }
 
-
-
-## For the first basin - may need to initialize separately
-## There will be one for each minima
-# 1. Get first minima location & set TRUE
-ij <- M[2,]
-i <- ij[1]
-j <- ij[2]
-R[i, j] <- 2 # set that value as TRUE in output array
-
-# 2. Check values at all four points
-# clockwise order is top, right, bottom, left
-P <- matrix(c(
-  (i - 1), j,
-  i, (j + 1),
-  (i + 1), j,
-  i, (j - 1)),
-  byrow = TRUE, ncol = 2,
-  dimnames = list(
-    c("top", "rhs", "bot", "lhs"),
-    c("row", "col"))) 
-
-# Maybe use for loop or apply here instead
-# Updated to include NA for edge cells
-val_vec <- c(
-  "top" = index_s(A = R, i = P[1,1], j = P[1,2]),
-  "rhs" = index_s(A = R, i = P[2,1], j = P[2,2]),
-  "bot" = index_s(A = R, i = P[3,1], j = P[3,2]),
-  "lhs" = index_s(A = R, i = P[4,1], j = P[4,2])
-)
-
-# 3. Add 0 coordinates to list of coords
-# 4. Update matrix, only need to do for 0s
-# Actually, could just use this as next starting point?
-# Then how to remove once done? Just advance index using while loop
-new_points <- rbind(new_points, 
-                    P[(val_vec) == 0 & (!is.na(val_vec)), ])
-
-
-# Need to run through one whole loop to get nonzero new_points
-# length before I can run the while loop
-ij <- unlist(new_points[3,]) # harmless to inc, fixes list issue
-i <- ij[1]
-j <- ij[2]
-R[i, j] <- 2 # set that value as TRUE in output array
