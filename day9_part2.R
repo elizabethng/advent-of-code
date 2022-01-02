@@ -60,20 +60,20 @@ zero_fun <- function(e){
 # or part of a ridge (i.e., a 9) and return an updated
 # matrix (filling TRUE for basin cell) and the coordinates
 # of a cell if it is determined to be part of a basin
-update_map <- function(R, val, i, j){
-  coords <- NA
-  if(is.na(val)){
-    print("encountered edge") 
-  } else if(val == 0) {
-    R[i, j] <- 2   # update array
-    coords <- c("row" = unname(i), "col" = unname(j))  # return coordinates
-  } else if(val == 1){
-    print("encountered ridge")
-  } else {
-    "error"
-  }
-  return(list(R = R, coords = coords))
-}
+# update_map <- function(R, val, i, j){
+#   coords <- NA
+#   if(is.na(val)){
+#     print("encountered edge") 
+#   } else if(val == 0) {
+#     R[i, j] <- 2   # update array
+#     coords <- c("row" = unname(i), "col" = unname(j))  # return coordinates
+#   } else if(val == 1){
+#     print("encountered ridge")
+#   } else {
+#     "error"
+#   }
+#   return(list(R = R, coords = coords))
+# }
 
 
 # Outline -----------------------------------------------------------------
@@ -102,6 +102,70 @@ R <- apply((A == 9), c(1, 2), as.numeric) # ridges := 1
 # Cleaner alternative (potentially) store in list
 new_points <- list()
 # matrix(NA, ncol = 2, dimnames = list(c(1),c("row", "col")))
+
+
+
+#' Function to update results matrix
+#'
+#' @param coords 1x2 numeric matrix with row index and column index
+#' @param resmat results matrix to be updated
+#' @param pointlist running list of new points to check (i.e, basin points)
+#'
+#' @return updated results matrix and point list
+update_map <- function(coords, resmat, pointlist){
+  # 1. Get cell and mark as basin
+  ij <- unlist(coords)
+  i <- ij[1]
+  j <- ij[2]
+  resmat[i, j] <- 2 
+  
+  # 2. Check values at all four points
+  # clockwise order is top, right, bottom, left
+  P <- matrix(c(
+    (i - 1), j,
+    i, (j + 1),
+    (i + 1), j,
+    i, (j - 1)),
+    byrow = TRUE, ncol = 2,
+    dimnames = list(
+      c("top", "rhs", "bot", "lhs"),
+      c("row", "col"))) 
+  
+  # Maybe use for loop or apply here instead
+  val_vec <- c(
+    "top" = index_s(A = R, i = P[1,1], j = P[1,2]),
+    "rhs" = index_s(A = R, i = P[2,1], j = P[2,2]),
+    "bot" = index_s(A = R, i = P[3,1], j = P[3,2]),
+    "lhs" = index_s(A = R, i = P[4,1], j = P[4,2])
+  )
+  
+  # 3. Add 0 coordinates to list of coords
+  pointlist <- rbind(pointlist, 
+                      P[(val_vec) == 0 & (!is.na(val_vec)), ])
+  
+  return(
+    list(resmat, pointlist)
+  )
+}
+
+first <- update_map(coords = M[2,], resmat = R, pointlist = new_points)
+
+counter <- 1
+R <- first[[1]]
+new_points <- first[[2]]
+
+while(counter <= nrow(new_points)){
+  tmp <- update_map(
+    coords = new_points[counter, ], 
+    resmat = R, 
+    pointlist = new_points)
+  
+  R <- tmp[[1]]
+  new_points <- tmp[[2]]
+  counter <- counter + 1
+}
+
+
 
 ## For the first basin - may need to initialize separately
 ## There will be one for each minima
