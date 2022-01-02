@@ -2,9 +2,9 @@
 library("tidyverse")
 
 # High level -- may need to recode the output matrix
-# 1 = included in basin
-# 2 = not evaluted yet
-# 3 = ridge (i.e., 9)
+# 2 = included in basin
+# 0 = not evaluated yet
+# 1 = ridge (i.e., 9)
 
 # Functions ---------------------------------------------------------------
 proc_data <- function(raw){
@@ -21,8 +21,12 @@ proc_data <- function(raw){
 }
 
 # Helper functions to handle out of bounds errors
-index <- function(A, i, j){ A[i, j] }
-index_s <- possibly(index, NULL)
+index <- function(A, i, j){ 
+  out <- A[i, j] 
+  if(length(out) == 0) out <- NA
+  return(out)
+  }
+index_s <- possibly(index, NA)
 
 # Returns a logical matrix of same size as A
 # where TRUE if the element is a local minima
@@ -40,7 +44,7 @@ get_minima <- function(A){
       lh <- index_s(A = A, i = i, j = (j - 1))
       rh <- index_s(A = A, i = i, j = (j + 1))
       
-      out <- all(c(tp, bt, lh, rh) > val)
+      out <- all(c(tp, bt, lh, rh) > val, na.rm = TRUE)
       O[i,j] <- out
     }
   }
@@ -58,13 +62,13 @@ zero_fun <- function(e){
 # of a cell if it is determined to be part of a basin
 update_map <- function(R, val, i, j){
   coords <- NA
-  if(length(val) == 0){
+  if(is.na(val)){
     print("encountered edge") 
-  } else if(is.na(val)) {
-    R[i, j] <- TRUE   # update array
+  } else if(val == 0) {
+    R[i, j] <- 2   # update array
     coords <- c("row" = unname(i), "col" = unname(j))  # return coordinates
-  } else if(val == FALSE){
-    print("encountered 9")
+  } else if(val == 1){
+    print("encountered ridge")
   } else {
     "error"
   }
@@ -91,15 +95,20 @@ update_map <- function(R, val, i, j){
 A <- read_lines("day9_test.txt") %>% proc_data() 
 minima <- get_minima(A)
 M <- which(minima == TRUE, arr.ind = TRUE) # minima locations
-R <- apply((A != 9), c(1,2), zero_fun)     # output array
+# R <- apply((A != 9), c(1,2), zero_fun)     # output array
+R <- apply((A == 9), c(1, 2), as.numeric) # ridges := 1
 
+# Initialize vector for storing points to evaluate
+# Cleaner alternative (potentially) store in list
 new_points <- matrix(NA, ncol = 2, dimnames = list(c(1),c("row", "col")))
 
+## For the first basin - may need to initialize separately
+## There will be one for each minima
 # 1. Get first minima location & set TRUE
 ij <- M[1,]
 i = ij[1]
 j = ij[2]
-R[i, j] <- TRUE # set that value as TRUE in output array
+R[i, j] <- 2 # set that value as TRUE in output array
 
 # 2. Check values at all four points
 # clockwise order is top, right, bottom, left
@@ -114,9 +123,7 @@ P <- matrix(c(
     c("row", "col"))) 
 
 # Maybe use for loop or apply here instead
-# I guess dropping the edge values is fine,
-# since these are dead ends
-# But how to index??
+# Updated to include NA for edge cells
 val_vec <- c(
   "top" = index_s(A = R, i = P[1,1], j = P[1,2]),
   "rhs" = index_s(A = R, i = P[2,1], j = P[2,2]),
@@ -124,8 +131,8 @@ val_vec <- c(
   "lhs" = index_s(A = R, i = P[4,1], j = P[4,2])
 )
 
-
-# 3. Add NA coordinates to list of coords
-# 4. Update matrix
+# 3. Add 0 coordinates to list of coords
+# 4. Update matrix, only need to do for 0s
+P[(val_vec) == 0 & (!is.na(val_vec)), ]
 
 update_map(R, val = top, i = )
