@@ -76,16 +76,14 @@ minima <- get_minima(A)
 M <- which(minima == TRUE, arr.ind = TRUE)
 ij <- M[1,]
 
-
 # Turn TRUE to 0 to initialize output array
 zero_fun <- function(e){
   ifelse(e, NA, e)
 }
 
-R <- (A != 9) %>%
-  # apply(c(1,2), as.numeric) %>%
-  apply(c(1,2), zero_fun)
-
+# Output array
+# 9s are represented by FALSE, everything else is NA
+R <- apply((A != 9), c(1,2), zero_fun)
 
 # Start at the min
 i = ij[1]
@@ -93,6 +91,11 @@ j = ij[2]
 
 # Local minima is included
 R[i, j] <- TRUE
+
+# Get coordinates to check around
+c(i-1, i+1, i, i)
+c(j, j, j-1, j+1)
+c(tp, bt, lh, rh)
 
 # Look around
 tp <- index_s(A = R, i = (i - 1), j = j)
@@ -128,3 +131,31 @@ update_map(rh, i = i, j = (j + 1))
 
 # But then need indices of any that were good
 # so search can continue there
+# I know from lh above that it's going to turn into
+# a TRUE, so those are the coordinates I'll want to use
+# at next step. So need to store those as well.
+# Perhaps add the NA coordinates to a list to check next?
+# Let's just add them to a running list of values to check
+# But remember that it needs to be done around each mimima
+
+# Outline
+# 0. Initialize the output array & get minima
+# 1. Get the first minima
+# 2. Check values at all four points
+# 3. Make a list of the coordinates that are NA
+# 4. Update the matrix
+# 5. Take the first value in the list of coordinates
+#    and use that as the value in step 1, repeat
+# 6. When the list of coordinates is empty, get the
+#    indices that are TRUE, this is output for first
+#    minima. 
+# 7. Make all the TRUE values FALSE
+# 8. Select the next minima value and go to step 2
+
+# 0. Initialize output array
+M <- which(minima == TRUE, arr.ind = TRUE)
+R <- apply((A != 9), c(1,2), zero_fun)
+minima <- get_minima(A)
+
+# 1. Get first minima
+ij <- M[1,]
