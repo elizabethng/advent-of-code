@@ -1,7 +1,21 @@
 
 library("tidyverse")
 
-# High level -- may need to recode the output matrix
+# Outline -----------------------------------------------------------------
+# 0. Initialize the output array & get minima
+# 1. Get the first minima & mark as basin (set to 2)
+# 2. Check values at all four points
+# 3. Make a list of the coordinates that are 0 (basin)
+# 
+# 4. Initialize counter and take the first value in the 
+#    list of coordinates to use as value in step 1
+# 5. Repeat steps 1-3, appending new coordinates and advance counter
+# 6. When the list of coordinates is exhausted, get the
+#    number of indices that are equal to 2 (i.e., basin size)
+#
+# 8. Select the next minima value and go to step 0
+
+# Marking key
 # 2 = included in basin
 # 0 = not evaluated yet
 # 1 = ridge (i.e., 9)
@@ -51,10 +65,6 @@ get_minima <- function(A){
   return(O)
 }
 
-# Turn TRUE to 0 to initialize output array
-# zero_fun <- function(e){
-#   ifelse(e, NA, e)
-# }
 
 #' Function to update results matrix
 #'
@@ -128,19 +138,8 @@ get_basin <- function(coords, resmat){
 
 
 
-# Outline -----------------------------------------------------------------
-# 0. Initialize the output array & get minima
-# 1. Get the first minima & set to 2
-# 2. Check values at all four points
-# 3. Make a list of the coordinates that are 0 (basin)
-# 4. Update the matrix to mark basin cells with 2
-# 5. Take the first value in the list of coordinates
-#    and use that as the value in step 1, repeat
-# 6. When the list of coordinates is empty, get the
-#    indices that are TRUE, this is output for first
-#    minima. 
-# 7. Make all the TRUE values FALSE
-# 8. Select the next minima value and go to step 2
+
+# Do calculations ---------------------------------------------------------
 
 # Test
 if(FALSE){
