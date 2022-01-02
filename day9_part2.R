@@ -78,10 +78,10 @@ update_map <- function(R, val, i, j){
 
 # Outline -----------------------------------------------------------------
 # 0. Initialize the output array & get minima
-# 1. Get the first minima & set TRUE
+# 1. Get the first minima & set to 2
 # 2. Check values at all four points
-# 3. Make a list of the coordinates that are NA
-# 4. Update the matrix
+# 3. Make a list of the coordinates that are 0 (basin)
+# 4. Update the matrix to mark basin cells with 2
 # 5. Take the first value in the list of coordinates
 #    and use that as the value in step 1, repeat
 # 6. When the list of coordinates is empty, get the
@@ -100,14 +100,15 @@ R <- apply((A == 9), c(1, 2), as.numeric) # ridges := 1
 
 # Initialize vector for storing points to evaluate
 # Cleaner alternative (potentially) store in list
-new_points <- matrix(NA, ncol = 2, dimnames = list(c(1),c("row", "col")))
+new_points <- list()
+# matrix(NA, ncol = 2, dimnames = list(c(1),c("row", "col")))
 
 ## For the first basin - may need to initialize separately
 ## There will be one for each minima
 # 1. Get first minima location & set TRUE
-ij <- M[1,]
-i = ij[1]
-j = ij[2]
+ij <- M[2,]
+i <- ij[1]
+j <- ij[2]
 R[i, j] <- 2 # set that value as TRUE in output array
 
 # 2. Check values at all four points
@@ -133,6 +134,15 @@ val_vec <- c(
 
 # 3. Add 0 coordinates to list of coords
 # 4. Update matrix, only need to do for 0s
-P[(val_vec) == 0 & (!is.na(val_vec)), ]
+# Actually, could just use this as next starting point?
+# Then how to remove once done? Just advance index using while loop
+new_points <- rbind(new_points, 
+                    P[(val_vec) == 0 & (!is.na(val_vec)), ])
 
-update_map(R, val = top, i = )
+
+# Need to run through one whole loop to get nonzero new_points
+# length before I can run the while loop
+ij <- unlist(new_points[3,]) # harmless to inc, fixes list issue
+i <- ij[1]
+j <- ij[2]
+R[i, j] <- 2 # set that value as TRUE in output array
