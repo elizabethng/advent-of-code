@@ -99,33 +99,7 @@ update_map <- function(coords, resmat, pointlist){
   )
 }
 
-
-# Outline -----------------------------------------------------------------
-# 0. Initialize the output array & get minima
-# 1. Get the first minima & set to 2
-# 2. Check values at all four points
-# 3. Make a list of the coordinates that are 0 (basin)
-# 4. Update the matrix to mark basin cells with 2
-# 5. Take the first value in the list of coordinates
-#    and use that as the value in step 1, repeat
-# 6. When the list of coordinates is empty, get the
-#    indices that are TRUE, this is output for first
-#    minima. 
-# 7. Make all the TRUE values FALSE
-# 8. Select the next minima value and go to step 2
-
-
-# 0. Initialize output array & get minima ---------------------------------
-A <- read_lines("day9_test.txt") %>% proc_data() 
-minima <- get_minima(A)
-M <- which(minima == TRUE, arr.ind = TRUE) # minima locations
-R <- apply((A == 9), c(1, 2), as.numeric) # ridges := 1
-
-# Now wrap in function and apply to each row of M to get a list
-# of results for each basin
-# ACTUALLY only need the size of each basin so add that as final
-# step
-
+# Apply update_map recursively to get basin size
 get_basin <- function(coords, resmat){
   # Initialize storage for points to evaluate
   new_points <- list()
@@ -152,5 +126,39 @@ get_basin <- function(coords, resmat){
   return(result)
 }
 
-apply(M, 1, get_basin, resmat = R)
 
+
+# Outline -----------------------------------------------------------------
+# 0. Initialize the output array & get minima
+# 1. Get the first minima & set to 2
+# 2. Check values at all four points
+# 3. Make a list of the coordinates that are 0 (basin)
+# 4. Update the matrix to mark basin cells with 2
+# 5. Take the first value in the list of coordinates
+#    and use that as the value in step 1, repeat
+# 6. When the list of coordinates is empty, get the
+#    indices that are TRUE, this is output for first
+#    minima. 
+# 7. Make all the TRUE values FALSE
+# 8. Select the next minima value and go to step 2
+
+# Test
+if(FALSE){
+  # Initialize output array & get minima 
+  A <- read_lines("day9_test.txt") %>% proc_data() 
+  minima <- get_minima(A)
+  M <- which(minima == TRUE, arr.ind = TRUE) # minima locations
+  R <- apply((A == 9), c(1, 2), as.numeric) # ridges := 1
+  
+  sizes <- apply(M, 1, get_basin, resmat = R)
+  sort(sizes, decreasing = TRUE)[1:3] %>% prod # 1134
+}
+
+# Results
+A <- read_lines("day9_input.txt") %>% proc_data() 
+minima <- get_minima(A)
+M <- which(minima == TRUE, arr.ind = TRUE) # minima locations
+R <- apply((A == 9), c(1, 2), as.numeric) # ridges := 1
+
+sizes <- apply(M, 1, get_basin, resmat = R)
+sort(sizes, decreasing = TRUE)[1:3] %>% prod # 1059300
